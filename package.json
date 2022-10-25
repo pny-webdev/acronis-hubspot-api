@@ -1,0 +1,26 @@
+{
+  "name": "acronis_api",
+  "version": "1.0.0",
+  "description": "App that receives http request to fetch Acronis code from HubSpot, then updates HubDB and adds Acronis code to contact.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "Will Decker",
+  "license": "ISC",
+  "engines": {
+    "node": "12.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "helmet": "^3.21.1",
+    "node-fetch": "^2.6.1",
+    "request": "^2.88.0"
+  }
+}
