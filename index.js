@@ -68,6 +68,7 @@ function fetchAcronisCode() {
       rowID = foundCode.id;
       unclaimedCode = foundCode.values["1"];
       claimCodeUrl = `${mainUrl}${rowID}${rowCellUrl}`;
+      console.log(rowID, unclaimedCode, claimCodeUrl);
     })
     // Mark the code as claimed
     .then(() => {
