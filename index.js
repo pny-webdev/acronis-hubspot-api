@@ -8,7 +8,6 @@ let foundCode;
 let contactEmail;
 let unclaimedCode;
 let rowID;
-const apiKey = "?hapikey=a40eb898-beff-421a-a4b5-a5bdb1ef4e1e";
 const mainUrl = `https://api.hubapi.com/hubdb/api/v2/tables/5441605/rows/`;
 const rowCellUrl = `/cells/2`;
 let claimCodeUrl;
@@ -42,7 +41,8 @@ function fetchAcronisCode() {
   let options = {
     method: "GET",
     headers: {
-      "Content-Type": "application/json",
+      'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+      'Content-Type': 'application/json',
     },
     json: true,
   };
@@ -67,7 +67,7 @@ function fetchAcronisCode() {
       });
       rowID = foundCode.id;
       unclaimedCode = foundCode.values["1"];
-      claimCodeUrl = `${mainUrl}${rowID}${rowCellUrl}${apiKey}`;
+      claimCodeUrl = `${mainUrl}${rowID}${rowCellUrl}`;
     })
     // Mark the code as claimed
     .then(() => {
@@ -78,7 +78,8 @@ function fetchAcronisCode() {
         method: "PUT",
         body: JSON.stringify(checked),
         headers: {
-          "Content-Type": "application/json",
+          'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
         },
       };
 
@@ -95,10 +96,14 @@ function fetchAcronisCode() {
     })
     // Publish updated list
     .then(() => {
-      let publishURL = `https://api.hubapi.com/hubdb/api/v2/tables/5441605/publish${apiKey}`;
+      let publishURL = `https://api.hubapi.com/hubdb/api/v2/tables/5441605/publish`;
 
       fetch(publishURL, {
         method: "PUT",
+        headers: {
+          'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
       }).then((res) => {
         if (res.ok) {
           console.log("DB UPDATED");
@@ -119,49 +124,51 @@ function fetchAcronisCode() {
 }
 
 function assignClaimedCode() {
-  
-  let assignURL = `https://api.hubapi.com/contacts/v1/contact/email/${contactEmail}/profile${apiKey}`;
+  let assignURL = `https://api.hubapi.com/contacts/v1/contact/email/${contactEmail}/profile`;
   let claimedCode = {
     properties: [{ property: "acronis_code", value: unclaimedCode }],
   };
   let claimedCodeRequest = {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(claimedCode),
   };
   console.log(contactEmail, unclaimedCode, claimedCodeRequest);
 
-  fetch(assignURL, claimedCodeRequest).then((res) => {
-    if (res.ok) {
-      console.log("CLAIM POST REQUEST SENT");
-      return res;
-    } else {
-      
-      throw new Error(
-        `CLAIM POST REQUEST FAILED: ${res.status} (${res.statusText})`
-      );
-    }
-  })
-  .then(sendEmail);
+  fetch(assignURL, claimedCodeRequest)
+    .then((res) => {
+      if (res.ok) {
+        console.log("CLAIM POST REQUEST SENT");
+        return res;
+      } else {
+        throw new Error(
+          `CLAIM POST REQUEST FAILED: ${res.status} (${res.statusText})`
+        );
+      }
+    })
+    .then(sendEmail);
 }
 
 function sendEmail() {
-  
-  let enrollURL = `https://api.hubapi.com/automation/v2/workflows/16869008/enrollments/contacts/${contactEmail}${apiKey}`;
+  let enrollURL = `https://api.hubapi.com/automation/v2/workflows/16869008/enrollments/contacts/${contactEmail}`;
 
   console.log(enrollURL);
 
   fetch(enrollURL, {
     method: "POST",
+    headers: {
+      'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
   }).then((res) => {
     if (res.ok) {
       console.log("EMAIL SENT");
       return res;
     } else {
-      
-      throw new Error(
-        `EMAIL SEND FAILED: ${res.status} (${res.statusText})`
-      );
+      throw new Error(`EMAIL SEND FAILED: ${res.status} (${res.statusText})`);
     }
   });
 }
