@@ -28,7 +28,7 @@ app.listen(PORT, () => {
 });
 
 app.get("/", (req, res) => {
-  res.json({ message: "IT WORKS!" });
+  res.send("Acronis API");
 });
 
 app.post("/api/FpHt4wA@*YN7z9&h", (req, res) => {
@@ -172,3 +172,5 @@ function sendEmail() {
     }
   });
 }
+
+module.exports = app
