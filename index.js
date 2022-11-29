@@ -2,12 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const fetch = require("node-fetch");
 const app = express();
-const helmet = require("helmet");
+const helmet = require("helmet"); 
+
+require('dotenv').config();
 
 let foundCode;
 let contactEmail;
 let unclaimedCode;
 let rowID;
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 const mainUrl = `https://api.hubapi.com/hubdb/api/v2/tables/5441605/rows/`;
 const rowCellUrl = `/cells/2`;
 let claimCodeUrl;
@@ -41,7 +44,7 @@ function fetchAcronisCode() {
   let options = {
     method: "GET",
     headers: {
-      'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+      'Authorization': `Bearer ${ACCESS_TOKEN}`,
       'Content-Type': 'application/json',
     },
     json: true,
@@ -79,7 +82,7 @@ function fetchAcronisCode() {
         method: "PUT",
         body: JSON.stringify(checked),
         headers: {
-          'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+          'Authorization': `Bearer ${ACCESS_TOKEN}`,
           'Content-Type': 'application/json',
         },
       };
@@ -105,7 +108,7 @@ function fetchAcronisCode() {
       fetch(publishURL, {
         method: "PUT",
         headers: {
-          'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+          'Authorization': `Bearer ${ACCESS_TOKEN}`,
           'Content-Type': 'application/json',
         },
       }).then((res) => {
@@ -135,7 +138,7 @@ function assignClaimedCode() {
   let claimedCodeRequest = {
     method: "POST",
     headers: {
-      'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+      'Authorization': `Bearer ${ACCESS_TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(claimedCode),
@@ -164,7 +167,7 @@ function sendEmail() {
   fetch(enrollURL, {
     method: "POST",
     headers: {
-      'Authorization': `Bearer ${process.env.ACCESS_TOKEN}`,
+      'Authorization': `Bearer ${ACCESS_TOKEN}`,
       'Content-Type': 'application/json',
     },
   }).then((res) => {
