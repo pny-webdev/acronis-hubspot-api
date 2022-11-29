@@ -84,7 +84,10 @@ function fetchAcronisCode() {
         },
       };
 
+      console.log(rowID, unclaimedCode, claimCodeUrl, updateList);
+
       fetch(claimCodeUrl, updateList).then((res) => {
+        
         if (res.ok) {
           console.log("MARK CODE AS CLAIMED");
           return res;
