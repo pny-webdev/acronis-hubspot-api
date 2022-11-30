@@ -14,6 +14,8 @@ const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 const mainUrl = `https://api.hubapi.com/hubdb/api/v2/tables/5441605/rows/`;
 const rowCellUrl = `/cells/2`;
 let claimCodeUrl;
+let currentDate = new Date();
+let time = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
 
 const PORT = process.env.PORT || 3825;
 
@@ -30,7 +32,7 @@ app.listen(PORT, () => {
   console.log(`Server running on ${PORT}/`);
 });
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("Acronis API");
 });
 
@@ -59,7 +61,7 @@ function fetchAcronisCode() {
   fetch(url, options)
     .then((res) => {
       if (res.ok) {
-        console.log("INITIAL REQ SUCCESS");
+        console.log("INITIAL REQ SUCCESS" + '' + time);
         return res;
       } else {
         throw new Error(
@@ -176,7 +178,7 @@ function sendEmail() {
     },
   }).then((res) => {
     if (res.ok) {
-      console.log("EMAIL SENT");
+      console.log("EMAIL SENT" + '' + time);
       return res;
     } else {
       throw new Error(`EMAIL SEND FAILED: ${res.status} (${res.statusText})`);
