@@ -34,6 +34,10 @@ app.get("/", (req, res) => {
   res.send("Acronis API");
 });
 
+app.get("/api/FpHt4wA@*YN7z9&h", (req, res) => {
+  res.send("API connected");
+});
+
 app.post("/api/FpHt4wA@*YN7z9&h", (req, res) => {
   contactEmail = req.body.email;
   fetchAcronisCode();
