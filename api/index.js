@@ -30,7 +30,7 @@ app.listen(PORT, () => {
   console.log(`Server running on ${PORT}/`);
 });
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("Acronis API");
 });
 
