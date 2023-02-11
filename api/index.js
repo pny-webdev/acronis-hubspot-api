@@ -11,7 +11,7 @@ let contactEmail;
 let unclaimedCode;
 let rowID;
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
-const mainUrl = `https://api.hubapi.com/hubdb/api/v2/tables/5441605/rows/`;
+const mainUrl = `https://api.hubapi.com/hubdb/api/v2/tables/5826984/rows/`;
 const rowCellUrl = `/cells/2`;
 let claimCodeUrl;
 let currentDate = new Date();
@@ -56,12 +56,12 @@ function fetchAcronisCode() {
     json: true,
   };
   let url =
-    "https://api.hubapi.com/hubdb/api/v2/tables/5441605/rows?portalId=40268";
+    "https://api.hubapi.com/hubdb/api/v2/tables/5826984/rows?portalId=40268";
   // Filter list for unclaimed Acronis code
   fetch(url, options)
     .then((res) => {
       if (res.ok) {
-        console.log("INITIAL REQ SUCCESS" + '' + time);
+        console.log("INITIAL REQ SUCCESS" + ' ' + time);
         return res;
       } else {
         throw new Error(
@@ -109,7 +109,7 @@ function fetchAcronisCode() {
     })
     // Publish updated list
     .then(() => {
-      let publishURL = `https://api.hubapi.com/hubdb/api/v2/tables/5441605/publish`;
+      let publishURL = `https://api.hubapi.com/hubdb/api/v2/tables/5826984/publish`;
 
       fetch(publishURL, {
         method: "PUT",
@@ -178,7 +178,7 @@ function sendEmail() {
     },
   }).then((res) => {
     if (res.ok) {
-      console.log("EMAIL SENT" + '' + time);
+      console.log("EMAIL SENT" + ' ' + time);
       return res;
     } else {
       throw new Error(`EMAIL SEND FAILED: ${res.status} (${res.statusText})`);
