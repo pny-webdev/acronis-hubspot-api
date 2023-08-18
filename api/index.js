@@ -1,22 +1,12 @@
-const express = require("express");
-const cors = require("cors");
-const fetch = require("node-fetch");
+const express = require('express');
+const cors = require('cors');
+const fetch = require('node-fetch');
 const app = express();
-const helmet = require("helmet"); 
-
+const helmet = require('helmet');
 require('dotenv').config();
 
-let foundCode;
-let contactEmail;
-let unclaimedCode;
-let rowID;
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
-const mainUrl = `https://api.hubapi.com/hubdb/api/v2/tables/5826984/rows/`;
-const rowCellUrl = `/cells/2`;
-let claimCodeUrl;
-let currentDate = new Date();
-let time = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-
+const HUBDB_TABLE_ID = process.env.HUBDB_TABLE_ID;
 const PORT = process.env.PORT || 3825;
 
 // HTTP Header Security
@@ -32,158 +22,131 @@ app.listen(PORT, () => {
   console.log(`Server running on ${PORT}/`);
 });
 
-app.get("/api", (req, res) => {
-  res.send("Acronis API");
+app.get('/api', (req, res) => {
+  res.send('Acronis API');
 });
 
-app.get("/api/FpHt4wA@*YN7z9&h", (req, res) => {
-  res.send("API connected");
+app.get('/api/FpHt4wA@*YN7z9&h', (req, res) => {
+  res.send('API connected');
 });
 
-app.post("/api/FpHt4wA@*YN7z9&h", (req, res) => {
-  contactEmail = req.body.email;
-  fetchAcronisCode();
-  res.send("All Good");
+app.post('/api/FpHt4wA@*YN7z9&h', async (req, res) => {
+  try {
+    const contactEmail = req.body.email;
+    const claimedCode = await fetchAcronisCode();
+    await assignClaimedCode(contactEmail, claimedCode);
+    await sendEmail(contactEmail);
+    res.send('All Good');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
 });
 
-function fetchAcronisCode() {
-  let options = {
-    method: "GET",
+async function fetchAcronisCode() {
+  const options = {
+    method: 'GET',
     headers: {
-      'Authorization': `Bearer ${ACCESS_TOKEN}`,
+      Authorization: `Bearer ${ACCESS_TOKEN}`,
       'Content-Type': 'application/json',
     },
-    json: true,
   };
-  let url =
-    "https://api.hubapi.com/hubdb/api/v2/tables/5826984/rows?portalId=40268";
-  // Filter list for unclaimed Acronis code
-  fetch(url, options)
-    .then((res) => {
-      if (res.ok) {
-        console.log("INITIAL REQ SUCCESS" + ' ' + time);
-        return res;
-      } else {
-        throw new Error(
-          `INITIAL REQ FAILED: ${res.status} (${res.statusText})`
-        );
-      }
-    })
-    .then((res) => res.json())
-    .then((data) => {
-      foundCode = data.objects.find((code) => {
-        return code.values["2"] === 0;
-      });
-      rowID = foundCode.id;
-      unclaimedCode = foundCode.values["1"];
-      claimCodeUrl = `${mainUrl}${rowID}${rowCellUrl}`;
-      console.log(rowID, unclaimedCode, claimCodeUrl);
-    })
-    // Mark the code as claimed
-    .then(() => {
-      let checked = {
-        value: 1,
-      };
-      let updateList = {
-        method: "PUT",
+  const url = `https://api.hubapi.com/hubdb/api/v2/tables/${HUBDB_TABLE_ID}/rows?portalId=40268`;
+  try {
+    const response = await fetch(url, options);
+    if (response.ok) {
+      console.log('INITIAL REQ SUCCESS ' + new Date().toLocaleTimeString());
+      const data = await response.json();
+      const foundCode = data.objects.find((code) => code.values['2'] === 0);
+      const rowID = foundCode.id;
+      const claimedCode = foundCode.values['1'];
+      const claimCodeUrl = `https://api.hubapi.com/hubdb/api/v2/tables/${HUBDB_TABLE_ID}/rows/${rowID}/cells/2`;
+      console.log(rowID, claimedCode, claimCodeUrl);
+      const checked = { value: 1 };
+      const updateList = {
+        method: 'PUT',
         body: JSON.stringify(checked),
         headers: {
-          'Authorization': `Bearer ${ACCESS_TOKEN}`,
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
           'Content-Type': 'application/json',
         },
       };
-
-      console.log(rowID, unclaimedCode, claimCodeUrl, updateList);
-
-      fetch(claimCodeUrl, updateList).then((res) => {
-        
-        if (res.ok) {
-          console.log("MARK CODE AS CLAIMED");
-          return res;
-        } else {
-          throw new Error(
-            `CODE CLAIM FAILED: ${res.status} (${res.statusText})`
-          );
-        }
-      });
-    })
-    // Publish updated list
-    .then(() => {
-      let publishURL = `https://api.hubapi.com/hubdb/api/v2/tables/5826984/publish`;
-
-      fetch(publishURL, {
-        method: "PUT",
+      const publishURL = `https://api.hubapi.com/hubdb/api/v2/tables/${HUBDB_TABLE_ID}/publish`;
+      await fetch(claimCodeUrl, updateList);
+      console.log('MARKED CODE AS CLAIMED');
+      await fetch(publishURL, {
+        method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${ACCESS_TOKEN}`,
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
           'Content-Type': 'application/json',
         },
-      }).then((res) => {
-        if (res.ok) {
-          console.log("DB UPDATED");
-          return res;
-        } else {
-          throw new Error(
-            `DB UPDATE FAILED: ${res.status} (${res.statusText})`
-          );
-        }
       });
-    })
-    .then(() => {
-      setTimeout(assignClaimedCode, 5000);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-}
-
-function assignClaimedCode() {
-  let assignURL = `https://api.hubapi.com/contacts/v1/contact/email/${contactEmail}/profile`;
-  let claimedCode = {
-    properties: [{ property: "acronis_code", value: unclaimedCode }],
-  };
-  let claimedCodeRequest = {
-    method: "POST",
-    headers: {
-      'Authorization': `Bearer ${ACCESS_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(claimedCode),
-  };
-  console.log(contactEmail, unclaimedCode, claimedCodeRequest);
-
-  fetch(assignURL, claimedCodeRequest)
-    .then((res) => {
-      if (res.ok) {
-        console.log("CLAIM POST REQUEST SENT");
-        return res;
-      } else {
-        throw new Error(
-          `CLAIM POST REQUEST FAILED: ${res.status} (${res.statusText})`
-        );
-      }
-    })
-    .then(sendEmail);
-}
-
-function sendEmail() {
-  let enrollURL = `https://api.hubapi.com/automation/v2/workflows/16869008/enrollments/contacts/${contactEmail}`;
-
-  console.log(enrollURL);
-
-  fetch(enrollURL, {
-    method: "POST",
-    headers: {
-      'Authorization': `Bearer ${ACCESS_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-  }).then((res) => {
-    if (res.ok) {
-      console.log("EMAIL SENT" + ' ' + time);
-      return res;
+      console.log('DB UPDATED');
+      return claimedCode;
     } else {
-      throw new Error(`EMAIL SEND FAILED: ${res.status} (${res.statusText})`);
+      throw new Error(
+        `INITIAL REQ FAILED: ${response.status} (${response.statusText})`
+      );
     }
-  });
+  } catch (error) {
+    console.log(error);
+    throw new Error(`Failed to fetch acronis code`);
+  }
 }
 
-module.exports = app
+async function assignClaimedCode(contactEmail, claimedCode) {
+  console.log(claimedCode)
+  const assignURL = `https://api.hubapi.com/contacts/v1/contact/email/${contactEmail}/profile`;
+  const claimedCodeRequest = {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${ACCESS_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      properties: [{ property: 'acronis_code', value: claimedCode }],
+    }),
+  };
+  try {
+    console.log(assignURL)
+    console.log(claimedCodeRequest)
+    const response = await fetch(assignURL, claimedCodeRequest);
+    if (response.ok) {
+      console.log('CLAIM POST REQUEST SENT');
+      return;
+    } else {
+      throw new Error(
+        `CLAIM POST REQUEST FAILED: ${response.status} (${response.statusText})`
+      );
+    }
+  } catch (error) {
+    console.log(error);
+    throw new Error(`Failed to assign claimed code: ${error.message}`);
+  }
+}
+
+async function sendEmail(contactEmail) {
+  const enrollURL = `https://api.hubapi.com/automation/v2/workflows/16869008/enrollments/contacts/${contactEmail}`;
+  try {
+    const response = await fetch(enrollURL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (response.ok) {
+      console.log('EMAIL SENT ' + new Date().toLocaleTimeString());
+      return;
+    } else {
+      throw new Error(
+        `EMAIL SEND FAILED: ${response.status} (${response.statusText})`
+      );
+    }
+  } catch (error) {
+    console.log(error);
+    throw new Error(`Failed to send email: ${error.message}`);
+  }
+}
+
+module.exports = app;
