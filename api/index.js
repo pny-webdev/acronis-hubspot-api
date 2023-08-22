@@ -19,18 +19,19 @@ app.use(cors());
 app.use(express.json());
 
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}/`);
+  console.log(`Server running on ${PORT}`);
 });
 
 app.get('/api', (req, res) => {
   res.send('Acronis API');
 });
 
-app.get('/api/FpHt4wA@*YN7z9&h', (req, res) => {
-  res.send('API connected');
+app.get('/api/register', (req, res) => {
+  res.send('Connected');
 });
 
-app.post('/api/FpHt4wA@*YN7z9&h', async (req, res) => {
+app.post('/api/register', async (req, res) => {
+  console.log('POST REQUEST RECEIVED ' + new Date().toLocaleTimeString());
   try {
     const contactEmail = req.body.email;
     const claimedCode = await fetchAcronisCode();
