@@ -18,16 +18,18 @@ app.use(cors());
 // Body Parser Middleware
 app.use(express.json());
 
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
-});
+app
+  .listen(PORT, () => {
+    console.log(`Server running on ${PORT}`);
+  })
+  .catch((err) => console.error(err));
 
 app.get('/api', (req, res) => {
   res.send('Acronis API');
 });
 
 app.get('/api/register', (req, res) => {
-  res.send('Connected');
+  res.send('API connected');
 });
 
 app.post('/api/register', async (req, res) => {
@@ -73,7 +75,7 @@ async function fetchAcronisCode() {
         },
       };
       const publishURL = `https://api.hubapi.com/hubdb/api/v2/tables/${HUBDB_TABLE_ID}/publish`;
-      await fetch(claimCodeUrl, updateList);
+      await fetch(claimCodeUrl, updateList).catch((err) => console.error(err));
       console.log('MARKED CODE AS CLAIMED');
       await fetch(publishURL, {
         method: 'PUT',
@@ -81,7 +83,7 @@ async function fetchAcronisCode() {
           Authorization: `Bearer ${ACCESS_TOKEN}`,
           'Content-Type': 'application/json',
         },
-      });
+      }).catch((err) => console.error(err));
       console.log('DB UPDATED');
       return claimedCode;
     } else {
@@ -96,7 +98,7 @@ async function fetchAcronisCode() {
 }
 
 async function assignClaimedCode(contactEmail, claimedCode) {
-  console.log(claimedCode)
+  console.log(claimedCode);
   const assignURL = `https://api.hubapi.com/contacts/v1/contact/email/${contactEmail}/profile`;
   const claimedCodeRequest = {
     method: 'POST',
@@ -109,9 +111,11 @@ async function assignClaimedCode(contactEmail, claimedCode) {
     }),
   };
   try {
-    console.log(assignURL)
-    console.log(claimedCodeRequest)
-    const response = await fetch(assignURL, claimedCodeRequest);
+    console.log(assignURL);
+    console.log(claimedCodeRequest);
+    const response = await fetch(assignURL, claimedCodeRequest).catch((err) =>
+      console.error(err)
+    );
     if (response.ok) {
       console.log('CLAIM POST REQUEST SENT');
       return;
@@ -135,7 +139,7 @@ async function sendEmail(contactEmail) {
         Authorization: `Bearer ${ACCESS_TOKEN}`,
         'Content-Type': 'application/json',
       },
-    });
+    }).catch((err) => console.error(err));
     if (response.ok) {
       console.log('EMAIL SENT ' + new Date().toLocaleTimeString());
       return;
