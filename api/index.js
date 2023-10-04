@@ -1,3 +1,13 @@
+process.on('uncaughtException', (err) => {
+  console.error('There was an uncaught error', err);
+  process.exit(1); //mandatory (as per the Node.js docs)
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1); //optional
+});
+
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
@@ -11,27 +21,43 @@ const PORT = process.env.PORT || 3825;
 
 // HTTP Header Security
 app.use(helmet());
+app.use((req, res, next) => {
+  console.log(`Helmet middleware called at ${new Date().toLocaleTimeString()}`);
+  next();
+});
 
 // Enable CORS Middleware
 app.use(cors());
+app.use((req, res, next) => {
+  console.log(`CORS middleware called at ${new Date().toLocaleTimeString()}`);
+  next();
+});
 
 // Body Parser Middleware
 app.use(express.json());
+app.use((req, res, next) => {
+  console.log(
+    `Body Parser middleware called at ${new Date().toLocaleTimeString()}`
+  );
+  next();
+});
 
-app
-  .listen(PORT, () => {
-    console.log(`Server running on ${PORT}`);
-  })
-  
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
+});
+
 app.get('/api', (req, res) => {
+  console.log('GET /api called');
   res.send('Acronis API');
 });
 
 app.get('/api/register', (req, res) => {
+  console.log('GET /api/register called');
   res.send('API connected');
 });
 
 app.post('/api/register', async (req, res) => {
+  console.log('POST /api/register called');
   console.log('POST REQUEST RECEIVED ' + new Date().toLocaleTimeString());
   try {
     const contactEmail = req.body.email;
@@ -46,6 +72,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 async function fetchAcronisCode() {
+  console.log('fetchAcronisCode called');
   const options = {
     method: 'GET',
     headers: {
@@ -97,6 +124,7 @@ async function fetchAcronisCode() {
 }
 
 async function assignClaimedCode(contactEmail, claimedCode) {
+  console.log('assignClaimedCode called');
   console.log(claimedCode);
   const assignURL = `https://api.hubapi.com/contacts/v1/contact/email/${contactEmail}/profile`;
   const claimedCodeRequest = {
@@ -130,6 +158,7 @@ async function assignClaimedCode(contactEmail, claimedCode) {
 }
 
 async function sendEmail(contactEmail) {
+  console.log('sendEmail called');
   const enrollURL = `https://api.hubapi.com/automation/v2/workflows/16869008/enrollments/contacts/${contactEmail}`;
   try {
     const response = await fetch(enrollURL, {
