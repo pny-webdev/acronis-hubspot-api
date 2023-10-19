@@ -1,8 +1,8 @@
-import express, { json } from 'express';
-import cors from 'cors';
-import fetch from 'node-fetch';
+const express = require('express');
+const cors = require('cors');
+const fetch = require('node-fetch');
 const app = express();
-import helmet from 'helmet';
+const helmet = require('helmet');
 require('dotenv').config();
 
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 });
 
 // Body Parser Middleware
-app.use(json());
+app.use(express.json());
 app.use((req, res, next) => {
   console.log(
     `Body Parser middleware called at ${new Date().toLocaleTimeString()}`
@@ -172,4 +172,4 @@ async function sendEmail(contactEmail) {
   }
 }
 
-export default app;
+module.exports = app;
