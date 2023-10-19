@@ -3,7 +3,6 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 const app = express();
 import helmet from 'helmet';
-
 require('dotenv').config();
 
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;

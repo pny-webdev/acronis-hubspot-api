@@ -8,6 +8,7 @@
     "start": "node api/index.js",
     "dev": "nodemon api/index.js"
   },
+  "type": "module",
   "author": "Will Decker",
   "license": "ISC",
   "engines": {
