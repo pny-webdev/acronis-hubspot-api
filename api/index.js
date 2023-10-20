@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const app = express();
-const helmet = require('helmet');
 require('dotenv').config();
 
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
@@ -10,11 +9,6 @@ const HUBDB_TABLE_ID = process.env.HUBDB_TABLE_ID;
 const PORT = process.env.PORT || 3825;
 
 // HTTP Header Security
-app.use(helmet());
-app.use((req, res, next) => {
-  console.log(`Helmet middleware called at ${new Date().toLocaleTimeString()}`);
-  next();
-});
 
 // Enable CORS Middleware
 app.use(cors());
