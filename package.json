@@ -11,7 +11,7 @@
   "author": "Will Decker",
   "license": "ISC",
   "engines": {
-    "node": "18.x"
+    "node": ">=18.x"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
@@ -21,7 +21,9 @@
     "dotenv": "^16.0.3",
     "express": "^4.17.1",
     "helmet": "^4.6.0",
+    "node-cron": "^3.0.3",
     "node-fetch": "^2.6.1",
+    "nvm": "^0.0.4",
     "request": "^2.88.0"
   }
 }

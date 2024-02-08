@@ -2,11 +2,21 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const app = express();
+const cron = require('node-cron');
 require('dotenv').config();
 
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 const HUBDB_TABLE_ID = process.env.HUBDB_TABLE_ID;
 const PORT = process.env.PORT || 3825;
+
+cron.schedule('*/14 * * * *', async () => {
+  try {
+     const response = await fetch('https://your-app-name.onrender.com');
+     console.log('Pinged server at ' + new Date().toLocaleTimeString());
+  } catch (error) {
+     console.error('Error pinging server: ', error);
+  }
+ });
 
 // HTTP Header Security
 
