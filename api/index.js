@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3825;
 
 cron.schedule('*/14 * * * *', async () => {
   try {
-     const response = await fetch('https://your-app-name.onrender.com');
+     const response = await fetch('https://acronis-hubspot-api.onrender.com');
      console.log('Pinged server at ' + new Date().toLocaleTimeString());
   } catch (error) {
      console.error('Error pinging server: ', error);
