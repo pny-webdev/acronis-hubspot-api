@@ -119,36 +119,38 @@ async function fetchAcronisCode() {
 
 async function assignClaimedCode(contactEmail, claimedCode) {
   console.log('assignClaimedCode called');
-  console.log(claimedCode);
-  const assignURL = `https://api.hubapi.com/contacts/v1/contact/email/${contactEmail}/profile`;
-  const claimedCodeRequest = {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      properties: [{ property: 'acronis_code', value: claimedCode }],
-    }),
-  };
-  try {
-    console.log(assignURL);
-    console.log(claimedCodeRequest);
-    const response = await fetch(assignURL, claimedCodeRequest).catch((err) =>
-      console.error(err)
-    );
-    if (response.ok) {
-      console.log('CLAIM POST REQUEST SENT');
-      return;
-    } else {
-      throw new Error(
-        `CLAIM POST REQUEST FAILED: ${response.status} (${response.statusText})`
-      );
+  
+  let retries =  3; // Number of retries
+  let delay =  1000; // Delay between retries in milliseconds
+
+  while (retries >  0) {
+    try {
+      const assignURL = `https://api.hubapi.com/contacts/v1/contact/email/${contactEmail}/profile`;
+      const claimedCodeRequest = {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          properties: [{ property: 'acronis_code', value: claimedCode }],
+        }),
+      };
+      const response = await fetch(assignURL, claimedCodeRequest);
+      if (response.ok) {
+        console.log('CLAIM POST REQUEST SENT');
+        return;
+      } else {
+        throw new Error(`CLAIM POST REQUEST FAILED: ${response.status} (${response.statusText})`);
+      }
+    } catch (error) {
+      console.log(`Error assigning claimed code: ${error.message}. Retrying...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      retries--;
     }
-  } catch (error) {
-    console.log(error);
-    throw new Error(`Failed to assign claimed code: ${error.message}`);
   }
+
+  throw new Error(`Failed to assign claimed code after ${retries} attempts.`);
 }
 
 async function sendEmail(contactEmail) {
