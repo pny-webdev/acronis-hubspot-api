@@ -119,7 +119,7 @@ async function fetchAcronisCode() {
 
 async function assignClaimedCode(contactEmail, claimedCode) {
   console.log('assignClaimedCode called');
-  
+
   let retries =  3; // Number of retries
   let delay =  1000; // Delay between retries in milliseconds
 
@@ -136,6 +136,8 @@ async function assignClaimedCode(contactEmail, claimedCode) {
           properties: [{ property: 'acronis_code', value: claimedCode }],
         }),
       };
+      console.log(assignURL);
+      console.log(claimedCodeRequest);
       const response = await fetch(assignURL, claimedCodeRequest);
       if (response.ok) {
         console.log('CLAIM POST REQUEST SENT');
