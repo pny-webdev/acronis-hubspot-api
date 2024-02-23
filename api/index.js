@@ -120,8 +120,8 @@ async function fetchAcronisCode() {
 async function assignClaimedCode(contactEmail, claimedCode) {
   console.log('assignClaimedCode called');
 
-  let retries =  3; // Number of retries
-  let delay =  1000; // Delay between retries in milliseconds
+  let retries =  5; // Number of retries
+  let delay =  5000; // Delay between retries in milliseconds
 
   while (retries >  0) {
     try {
@@ -152,7 +152,7 @@ async function assignClaimedCode(contactEmail, claimedCode) {
     }
   }
 
-  throw new Error(`Failed to assign claimed code after ${retries} attempts.`);
+  throw new Error(`Failed to assign claimed code. ${retries} attempts remaining.`);
 }
 
 async function sendEmail(contactEmail) {
